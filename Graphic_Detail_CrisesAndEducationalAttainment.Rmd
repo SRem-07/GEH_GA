@@ -1,0 +1,432 @@
+---
+title: "Crises and Educational Attainment"
+subtitle: "How education trends changed during the Great Depression"
+author: "Based on Janas (2025), *Journal of Economic History*"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    highlight: tango
+    toc: false
+    fig_width: 8
+    fig_height: 5
+---
+<style>
+    .custom-title {
+        color: red;
+        font-size: 36px;
+        font-family: Arial;
+        /* Add other styles as needed */
+    }
+</style>
+
+
+<style>
+    body {
+        font-family: Milo TE;
+    }
+</style>
+
+
+
+
+```{r reload, include = FALSE}
+# Delete the old parquet
+if (file.exists("replication_sample_icpsr.parquet")) {
+  file.remove("replication_sample_icpsr.parquet")
+  message("Old parquet deleted — re-run the load-data chunk to rebuild it.")
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE, 
+                      message = FALSE,
+                      fig.width = 8,
+                      fig_height = 5)
+
+# Packages
+library(tidyverse)
+library(fixest) # or feols() regression command, equivalent to STATA reghdfe
+library(broom)
+library(patchwork) # combining plots
+library(scales) # axis formatting
+library(ggtext) # labels of graphs
+library(fixest)
+library(data.table)
+library(arrow) # all three to read in large data set, increase efficiency
+library(ggridges)
+
+# Theme
+economist_red  <- "#E3120B"
+economist_blue <- "#006BA2"
+economist_grey <- "#D7D7D7"
+bg_colour      <- "lightgrey"   #F5F0E8 for brown
+
+# Custom theme for consistent plotting
+theme_custom <- function(base_size = 11) {
+  theme(
+    # Background
+    plot.background    = element_rect(fill = bg_colour, colour = NA),
+    panel.background   = element_rect(fill = bg_colour, colour = NA),
+    panel.grid.major.y = element_line(colour = "#CCCCCC", linewidth = 0.4),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor   = element_blank(),
+    
+    # Top red rule (simulated via plot.title margin)
+    
+    # Title style
+    plot.title         = element_text(
+      family = "Georgia", face = "bold", size = 13,
+      margin = margin(t = 14, b = 4)
+    ),
+    
+    # Subtitle style
+    plot.subtitle      = element_text(
+      family = "Georgia", face = "italic", size = 10, colour = "#555555",
+      margin = margin(b = 10)
+    ),
+    
+    # Caption style
+    plot.caption       = element_text(
+      family = "sans", size = 8, colour = "#777777",
+      hjust = 0, margin = margin(t = 8)
+    ),
+    
+    # Axis style
+    axis.title         = element_text(family = "sans", size = 9, colour = "#444444"),
+    axis.text          = element_text(family = "sans", size = 9, colour = "#333333"),
+    axis.ticks         = element_line(colour = "#AAAAAA"),
+    axis.line.x        = element_line(colour = "#333333", linewidth = 0.6),
+    legend.background  = element_rect(fill = bg_colour, colour = NA),
+    legend.key         = element_rect(fill = bg_colour, colour = NA),
+    legend.text        = element_text(family = "sans", size = 9),
+    legend.title       = element_blank(),
+    legend.position    = "bottom",
+    strip.text         = element_text(family = "sans", face = "bold", size = 9),
+    plot.margin        = margin(12, 16, 12, 12)
+  )
+}
+
+# Draws red line above plot title
+economist_rule <- function() {
+  annotation_custom(
+    grid::rectGrob(
+      x = 0, y = 1, width = 1, height = unit(3, "pt"),
+      gp = grid::gpar(fill = economist_red, col = NA)
+    ),
+    xmin = -Inf, xmax = Inf, ymin = Inf, ymax = Inf
+  )
+}
+```
+
+```{r load-data}
+# Only load columns needed for all three charts (efficiency of loading from 4GB data set)
+needed_cols <- c(
+  "finish_12_100", "finish_9_100",
+  "delta_unemp_estimate_youth",
+  "occscore_pop_q",
+  "cohort", "age1930",
+  "male", "id_",
+  "educ_cont",
+  "probit_w"
+)
+
+# Convert csv to parquet
+parquet_path <- "replication_sample_icpsr.parquet"
+
+if (!file.exists(parquet_path)) {
+  message("Converting CSV to Parquet (one-time, ~1 min)...")
+  open_csv_dataset("edu_data.csv") %>%
+    select(all_of(needed_cols)) %>%
+    write_parquet(parquet_path)
+}
+
+df_raw <- read_parquet(parquet_path, col_select = all_of(needed_cols))
+
+# Derive variables for analysis/graphs
+df <- df_raw %>%
+  mutate(
+    delta_unemp_std = (delta_unemp_estimate_youth - mean(delta_unemp_estimate_youth, na.rm = TRUE)) /
+                       sd(delta_unemp_estimate_youth, na.rm = TRUE),
+    finish_12_rate  = finish_12_100 / 100,
+    finish_9_rate   = finish_9_100  / 100,
+    retail_q        = ntile(delta_unemp_std, 3) # rertiles
+  )
+
+```
+
+
+
+```{r Chart-1-Preparation}
+# Tertile of unemployment shock (3 groups of unemployment, ranked)
+df <- df %>%
+  mutate(retail_q = ntile(delta_unemp_std, 3))
+
+# Cohort-level completion rates by unemployment tertile
+chart1_data <- df %>%
+  filter(retail_q %in% c(1, 3)) %>% # filter for unemployment data in 1st or 3rd tercile
+  group_by(retail_q, cohort) %>% # subsequent operations done within each group
+  summarise(
+    finish_share = mean(finish_12_rate, na.rm = TRUE), # calculate mean completion rate for each unemployment group by cohort, then ungroup data
+    .groups = "drop"
+  ) %>%
+  mutate(
+    xaxis       = cohort - 1,   # year cohort turns 17 (born 1912 → turns 17 in 1929)
+    unemp_group = if_else(retail_q == 1, # categorical column based on unemployment tercile
+                          "Lowest unemployment counties (Q1)",
+                          "Highest unemployment counties (Q3)")
+  )
+
+```
+
+```{r chart1}
+ggplot(chart1_data, aes(x = xaxis, y = finish_share,
+                        colour = unemp_group, linetype = unemp_group,
+                        shape  = unemp_group)) +
+  # Shade depression onset period
+  annotate("rect",
+           xmin = 1929.5, xmax = max(chart1_data$xaxis, na.rm = TRUE) + 0.5, # x bounds of box
+           ymin = -Inf, ymax = Inf, # y bounds
+           fill = "#DDDDDD", alpha = 0.35) + # colour of box
+  annotate("text", x = 1930.2, y = Inf, # bounds
+           label = "Depression\nonset →",
+           vjust = 1.4, hjust = 0, size = 2.8, colour = "#666666", # colour and size
+           family = "sans") + #font
+  geom_vline(xintercept = 1929.5, linetype = "dashed", # line to signify depression onset
+             color = "#888888", linewidth = 0.5) +
+  geom_line(linewidth = 0.9) + # line chart
+  geom_point(size = 2.2) + # with data points, on the line
+  scale_color_manual(values = c( # colours of lines
+    "Highest unemployment counties (Q3)" = economist_red,
+    "Lowest unemployment counties (Q1)"  = "#555555")) +
+  scale_linetype_manual(values = c( # type of lines in chart
+    "Highest unemployment counties (Q3)" = "solid",
+    "Lowest unemployment counties (Q1)"  = "solid"
+  )) +
+  scale_shape_manual(values = c( # for points
+    "Highest unemployment counties (Q3)" = 16,
+    "Lowest unemployment counties (Q1)"  = 1
+  )) +
+  scale_x_continuous( # x-axis scale/values
+    breaks = seq(1925, 1938, by = 1),
+    labels = seq(1925, 1938, by = 1)
+  ) +
+  scale_y_continuous( # y-axis scale/values
+    labels = scales::percent_format(accuracy = 1),
+    limits = c(0.38, 0.62)
+  ) +
+  labs(
+    title    = "Narrowing the Gap - Changing Opportunity Cost",
+    subtitle = "Share completing high school (≥12 years), by county unemployment severity",
+    x        = "Year cohort turns 17",
+    y        = NULL,
+    caption  = "Source: Janas (2025), Journal of Economic History. IPUMS linked census data.\nNote: x-axis shows the year each birth cohort reached age 17."
+  ) +
+  theme_custom() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r chart2-prep}
+# Comparing cohorts born before and during the Great Depression, across different unemployment environments
+
+chart2_data <- df %>%
+  filter(
+    !is.na(educ_cont), # keep rows where data for educ_cont is not missing
+    !is.na(retail_q), # keep rows where retail_q is not missing
+    cohort %in% c(1925, 1926, 1927, 1928, 1929, 1935, 1936, 1937) # keep data for cohort within values
+  ) %>%
+  mutate(
+    period = if_else( # creates new column based on cohort year, if_else to categorical
+      cohort <= 1929,
+      "Pre-Depression (cohort 1925-29)",
+      "Late Depression (cohort 1935-37)"
+    ),
+    period = factor(period, levels = c( # converts period to categorical variable 
+      "Pre-Depression (cohort 1925-29)",
+      "Late Depression (cohort 1935-37)"
+    )),
+    unemp_grp = case_when( # new categorical column based on unemployment values (terciles)
+      retail_q == 1 ~ "Low unemployment (Q1)",
+      retail_q == 2 ~ "Mid unemployment (Q2)",
+      retail_q == 3 ~ "High unemployment (Q3)"
+    ),
+    unemp_grp = factor(unemp_grp, levels = c( # converts to categorical variables, in order
+      "High unemployment (Q3)",
+      "Mid unemployment (Q2)",
+      "Low unemployment (Q1)"
+    ))
+  )
+
+# message("Rows in chart2_data: ", nrow(chart2_data))
+# count(chart2_data, period)
+```
+
+
+```{r chart2}
+# Ridgeline plot comparing distribution of years of educations across unemployment terciles and cohorts 
+  # use bins, instead of smoother, to prevent jagged lines
+ggplot(chart2_data,
+       aes(x      = educ_cont,
+           y      = unemp_grp,
+           fill   = unemp_grp,
+           weight = probit_w)) +
+  geom_density_ridges(
+    stat           = "binline", # bins, so not continuous (more like a histogram)
+    bins           = 18,
+    scale          = 0.9,
+    draw_baseline  = FALSE,
+    alpha          = 0.75,
+    colour         = "white",
+    linewidth      = 0.3
+  ) +
+  geom_vline(xintercept = 12, linetype = "dashed", # vertical line to mark high school completion point
+             colour = "black", linewidth = 0.45) +
+  annotate("text", x = 12.4, y = 3.6, # text in ... position
+           label = "High school\ncompletion",
+           hjust = 0, size = 2.6,
+           colour = "#555555", family = "sans") +
+  scale_x_continuous(  # x-axis formatting
+    breaks = c(0, 4, 8, 12, 16),
+    limits = c(0, 18)
+  ) +
+  scale_fill_manual(values = c( # colours for each ridge
+    "High unemployment (Q3)" = economist_red,
+    "Mid unemployment (Q2)"  = "#888888",
+    "Low unemployment (Q1)"  = "#555555"
+  )) +
+  facet_wrap(~period, ncol = 2) + # two side by side plots for the different periods
+  labs(
+    title    = "Hard times, higher education",
+    subtitle = "Distribution of years of schooling completed, by county unemployment\nseverity and cohort group. Dashed line marks high school completion.",
+    x        = "Years of education completed",
+    y        = NULL,
+    caption  = "Source: Janas (2025), Journal of Economic History. Weighted by inverse probability weights."
+  ) +
+  theme_custom() +
+  theme(
+    legend.position    = "none",
+    strip.text         = element_text(face = "bold", size = 10),
+    axis.text.y        = element_text(size = 9),
+    panel.grid.major.y = element_blank()
+  )
+
+# clustering around 8-9 years, completion of middle/elementary
+# low unemployment counties have little change during depression
+# chart 1 quantifies shift, this chart shows underlying context (where about youth are completing school to, more granular)
+
+```
+
+
+
+```{r chart3-prep}
+# Interaction regression: finish_12 ~ unemployment x age_in_1930
+# Separately for men (male == 1) and women (male == 0)
+# Using feols() from fixest as the R equivalent of reghdfe
+
+run_age_model <- function(gender_val, label) {
+  d <- df %>%
+    filter(
+      male == gender_val, # selecting one gender
+      !is.na(finish_12_rate), # where the following variables are not missing
+      !is.na(delta_unemp_std),
+      !is.na(age1930),
+      is.finite(probit_w),
+      age1930 %in% 11:23 # between specific ages
+    )
+  
+   # Fixed effects ordinary least squares regression
+      # Dependent: finish_12_rate
+      # Independent: interaction of age1930 (factor) with delta_unemp_std, using age 18 as the reference category
+        # i(age1930, delta_unemp_std, ref = "18") means model estimates how the effect of delta_unemp_std varies by age group, relative to age 18
+      # Fixed effects: id_ (individual level) and cohort, controlling for unobserved heterogeneity
+      # Weights: uses probit_w to weight observations
+      # Clusted standard errors: clustered by id_ to account for within-individual correlation
+
+  mod <- feols(
+    finish_12_rate ~ i(age1930, delta_unemp_std, ref = 18) |
+      id_ + cohort,
+    data    = d,
+    weights = ~probit_w,
+    cluster = ~id_
+  )
+
+  # Extract coefficients safely using broom
+  results <- tidy(mod, conf.int = TRUE, conf.level = 0.90) %>% # extract model coefficients with 90% confidence intervals
+    filter(str_detect(term, "delta_unemp_std")) # filters results to keep only terms related to delta_unemp_std
+
+  results %>%
+    mutate(
+      age    = as.integer(str_extract(term, "(?<=age1930::)\\d+")),
+      gender = label
+    ) %>%
+    filter(!is.na(age))
+}
+
+chart3_data <- bind_rows(
+  run_age_model(0, "Women"),
+  run_age_model(1, "Men")
+) %>%
+  # Add reference age 18 as zero
+  bind_rows(
+    tibble(age = 18, estimate = 0, conf.low = 0, conf.high = 0,
+           gender = c("Women", "Men"))
+  ) %>%
+  arrange(gender, age)
+```
+
+```{r chart3}
+ggplot(chart3_data, aes(x = age, y = estimate,
+                        color = gender, fill = gender, group = gender)) +
+  geom_hline(yintercept = 0, color = "#888888", linewidth = 0.5) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.15, color = NA) +
+  geom_line(linewidth = 0.9) +
+  annotate("rect", xmin = 13.5, xmax = 17.5,
+           ymin = -Inf, ymax = Inf,
+           fill = "#FFDD99", alpha = 0.25) +
+  annotate("text", x = 15.5, y = Inf,
+           label = "Prime high-school years",
+           vjust = 1.6, size = 2.7, colour = "#666600", family = "sans") +
+  scale_colour_manual(values = c(
+    "Women" = economist_red,
+    "Men" = economist_blue
+  )) +
+  scale_fill_manual(values = c(
+    "Women" = economist_red,
+    "Men" = economist_blue
+    )) +
+  scale_x_continuous(
+    breaks = seq(11, 23, by = 1),
+    labels = seq(11, 23, by = 1)
+  ) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  labs(
+    title = "Age during Depression determines education outcomes ",
+    subtitle = "Effect on high school completion of a 1 standard deviation rise in local unemployment, \nby age in 1930 (reference: age 18). 90% confidence intervals shown.",
+    x = "Age in 1930",
+    y = NULL,
+    caption = "Source: Janas (2025), Journal of Economic History.\nEstimates from OLS with city and cohort fixed effects.\nNotes: Effect is relative to age-18 reference group. Shaded band highlights typical high-school enrolment ages."
+  ) +
+  theme_custom()
+
+```
+
+
+### Main Title of your Text (change to your title)
+
+<strong> This is the subtitle or first sentence describing your graphic details (change to your subtitle) </strong>
+
+
+Delete the following text and replace it with your GraphicDetail text
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+
+
+
+
