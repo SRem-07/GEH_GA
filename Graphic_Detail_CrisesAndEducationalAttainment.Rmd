@@ -39,7 +39,7 @@ if (file.exists("replication_sample_icpsr.parquet")) {
 ```
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,
+knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE, 
                       message = FALSE,
                       fig.width = 8,
@@ -120,7 +120,7 @@ economist_rule <- function() {
 }
 ```
 
-```{r load-data}
+```{r load-data, include=FALSE}
 # Only load columns needed for all three charts (efficiency of loading from 4GB data set)
 needed_cols <- c(
   "finish_12_100", "finish_9_100",
@@ -158,7 +158,7 @@ df <- df_raw %>%
 
 
 
-```{r Chart-1-Preparation}
+```{r Chart-1-Preparation, include=FALSE}
 # Tertile of unemployment shock (3 groups of unemployment, ranked)
 df <- df %>%
   mutate(retail_q = ntile(delta_unemp_std, 3))
@@ -228,7 +228,7 @@ ggplot(chart1_data, aes(x = xaxis, y = finish_share,
 
 ```
 
-```{r chart2-prep}
+```{r chart2-prep, include=FALSE}
 # Comparing cohorts born before and during the Great Depression, across different unemployment environments
 
 chart2_data <- df %>%
@@ -320,7 +320,7 @@ ggplot(chart2_data,
 
 
 
-```{r chart3-prep}
+```{r chart3-prep, include=FALSE}
 # Interaction regression: finish_12 ~ unemployment x age_in_1930
 # Separately for men (male == 1) and women (male == 0)
 # Using feols() from fixest as the R equivalent of reghdfe
