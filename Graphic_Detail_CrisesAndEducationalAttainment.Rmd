@@ -61,7 +61,7 @@ library(ggridges)
 economist_red  <- "#E3120B"
 economist_blue <- "#006BA2"
 economist_grey <- "#D7D7D7"
-bg_colour      <- "lightgrey"   #F5F0E8 for brown
+bg_colour      <- "white"   #F5F0E8 for brown
 
 # Custom theme for consistent plotting
 theme_custom <- function(base_size = 11) {
@@ -415,17 +415,13 @@ ggplot(chart3_data, aes(x = age, y = estimate,
 ```
 
 
-### Main Title of your Text (change to your title)
+### Crisis and Educational Attainment
 
-<strong> This is the subtitle or first sentence describing your graphic details (change to your subtitle) </strong>
+<strong> How education completion rates changed during the Great Depression </strong>
 
+The Great Depression saw sky-rocketing youth unemployment, and perhaps paradoxically, led to increased educational attainment of America's youth. Pawel Janas suggests in his paper "Crises and Educational Attainment" two mechanisms for human capital decisions, applicable to this period. He characterises a 'youth unemployment channel', where as youth unemployment increases due to a recession, job prospects and wages decrease, lowering the opportunity cost for education in terms of immediate income by entering the workforce and ceasing education. The second stems from family budget constraints, where due to increased unemployment in the economy, family income declines, which increases the opportunity cost of education for working-age youth. These opposing mechanisms highlight an interplay between economic conditions, household resources and educational choices for youth during the Great Depression. Janas finds that the capacity of American youth to extend their education from lower opportunity costs to be unevenly distributed across socioeconomic groups, stemming from the complex interplay of factors. 
 
-Delete the following text and replace it with your GraphicDetail text
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
-
+Janas' paper, published in the Journal of Economic History, utilises multiple archival sources from U.S. census records and digitised unemployment data from the Special Unemployment Census of 1931 and the 1940 federal census. Utlising this 1940 census data, he compares outcomes in 1940 for cohorts turning 17 years old before the Depression's start, with those making high school education decisions during the depression. 
 
 
 
