@@ -73,8 +73,6 @@ theme_custom <- function(base_size = 11) {
     panel.grid.major.x = element_blank(),
     panel.grid.minor   = element_blank(),
     
-    # Top red rule (simulated via plot.title margin)
-    
     # Title style
     plot.title         = element_text(
       family = "Georgia", face = "bold", size = 13,
@@ -380,7 +378,7 @@ chart3_data <- bind_rows(
 ggplot(chart3_data, aes(x = age, y = estimate,
                         color = gender, fill = gender, group = gender)) +
   geom_hline(yintercept = 0, color = "#888888", linewidth = 0.5) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.15, color = NA) +
+  #geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.15, color = NA) +
   geom_line(linewidth = 0.9) +
   annotate("rect", xmin = 13.5, xmax = 17.5,
            ymin = -Inf, ymax = Inf,
