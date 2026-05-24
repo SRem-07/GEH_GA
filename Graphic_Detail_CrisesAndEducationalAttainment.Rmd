@@ -149,7 +149,7 @@ df <- df_raw %>%
                        sd(delta_unemp_estimate_youth, na.rm = TRUE),
     finish_12_rate  = finish_12_100 / 100,
     finish_9_rate   = finish_9_100  / 100,
-    retail_q        = ntile(delta_unemp_std, 3) # rertiles
+    retail_q        = ntile(delta_unemp_std, 3) # terciles
   )
 
 ```
@@ -388,12 +388,12 @@ ggplot(chart3_data, aes(x = age, y = estimate,
            label = "Prime high-school years",
            vjust = 1.6, size = 2.7, colour = "#666600", family = "sans") +
   scale_colour_manual(values = c(
-    "Women" = economist_red,
-    "Men" = economist_blue
+    "Women" = "#de61aa",
+    "Men" = "#62c0de"
   )) +
   scale_fill_manual(values = c(
-    "Women" = economist_red,
-    "Men" = economist_blue
+    "Women" = "#de61aa",
+    "Men" = "#62c0de"
     )) +
   scale_x_continuous(
     breaks = seq(11, 23, by = 1),
@@ -418,20 +418,18 @@ ggplot(chart3_data, aes(x = age, y = estimate,
 
 <strong> How education completion rates changed during the Great Depression </strong>
 
-The Great Depression saw sky-rocketing youth unemployment, and perhaps paradoxically, led to increased educational attainment of America's youth. Pawel Janas suggests in his paper "Crises and Educational Attainment" two mechanisms for human capital decisions, applicable to this period. He characterises a 'youth unemployment channel', where as youth unemployment increases due to a recession, job prospects and wages decrease, lowering the opportunity cost for education in terms of immediate income by entering the workforce and ceasing education. The second stems from family budget constraints, where due to increased unemployment in the economy, family income declines, increasing the opportunity cost of education for working-age youth. These opposing mechanisms highlight an interplay between economic conditions, household resources and educational choices for youth during the Great Depression. Janas finds that the capacity of American youth to extend their education from lower opportunity costs to be unevenly distributed across socioeconomic groups.
+The Great Depression saw sky-rocketing youth unemployment, and perhaps paradoxically, led to increased educational attainment of America's youth. In his paper "Crises and Educational Attainment", Pawel Janas explores two opposing mechanisms driving human capital decisions. He characterises a 'youth unemployment channel', where as youth unemployment increases due to recession, immediate earning potential decreases, lowering the opportunity cost for remaining in school. The second stems from family budget constraints, where as family incomes decline, families face pressure to pull working-age youth out of school to help supplement basic needs. These opposing mechanisms highlight an interplay between economic conditions, household resources and educational choices for youth during the Great Depression. Janas finds that the capacity of American youth to extend their education due to lower opportunity costs unevenly distributed across socioeconomic groups.
 
 Janas' paper, published in the Journal of Economic History, utilises multiple archival sources from U.S. census records and digitised unemployment data from the Special Unemployment Census of 1931 and the 1940 federal census. Utlising this 1940 census data, he compares outcomes in 1940 for cohorts turning 17 years old before the Depression's start, with those making high school education decisions during the depression. 
 
-Prior to the Depression, high-school completion rates were lower in high-unemployment counties as poorer families faced a higher opportunity cost of keeping teenagers in school: the wages they could otherwise earn in low-skilled, labour-intensive work. The Depression materially changed that calculation. As business activity collapsed, demand for youth labour fell, reducing the income America's youth could earn that previously was forgone by staying enrolled. For families that could still absorb the costs of schooling and lost income, education became the more rational choice.
+Prior to the Depression, high-school completion rates were lower in high-unemployment counties as poorer families faced a higher opportunity cost of keeping teenagers in school: the wages they could otherwise earn in low-skilled, labour-intensive work. The Depression materially changed that calculation. As business activity collapsed, demand for youth labour fell, lowering the opportunity cost of staying enrolled in education. For families that could still absorb the costs of schooling and lost income, education became the more rational choice.
 
-This shift resulted in a flattening of the peak around elementary education, between eight to nine years completed, as more students extended their education to graduate high school after 12 years. While this trend occurred regardless of county unemployment severity, the impact was most pronounced for students in high unemployment counties. As these areas saw greater unemployment and lower incomes for youth, they saw the most significant drop in opportunity costs, and hence a greater surge in completion rates relative to low unemployment counties. 
+This shift resulted in a flattening of the peak around elementary education, a traditional exit point between eight to nine years of completed schooling, as more students extended their education to graduate high school after 12 years. While this trend occurred regardless of county unemployment severity, the impact was most pronounced for students in the hardest-hit areas As these areas saw greater unemployment and lower incomes for youth, they saw the most significant drop in opportunity costs, hence a relatively greater surge in the schooling completion rate.
 
-Nonetheless, students in richer families extended their education, flattening the elementary school peak into the already high pre-depression high school completion peak. This relatively modest change lightly accelerated, but largely continued the rising high school completion rates seen for richer students, expected if unemployment is the main driver. 
+While high school graduation rates rose nationwide, they grew fasted in the poorest and hardest-hit areas, supercharging the already rising completion rates and narrowing the gap from about six percentage points to roughly three-and-a-half. This convergence suggests that the marginal benefits of education were greatest where the Depression most sharply reduced the returns to leaving school. 
 
-Completion rates, therefore, rose fastest in the poorest, high-unemployment counties, supercharging the already rising completion rates and narrowing the gap from about six percentage points to roughly three-and-a-half. This convergence suggests that the marginal benefits of education were greatest where the Depression most sharply reduced the returns to leaving school. By keeping students in school longer, the depression paradoxically acted to reduce educational inequality. 
+Paradoxically, the crisis acted as an equalizer by reducing educational inequality, but the gap did not disappear. Household resources still remained a primary constraint to education access. While the collapsed economy strengthened the incentive to stay in school, only families with sufficient resources could act on that incentive.
 
-Yet despite this progress, the gap did not disappear. Household resources still remained a primary constraint to education access. While the collapsed economy strengthened the incentive to stay in school, only families with sufficient resources could afford to act on that incentive.
+For younger adolescents, the Depression anchored them in the classroom, however older teens, beyond school, faced a much harsher reality. Having already completed or left their education before the Depression, they faced a weak labour market, without the buffer of schooling, resulting in severe economic ramifications for this age group. 
 
-The Great Depression transformed the opportunity cost of education whilst labor market conditions were poorer. Among younger teens, the loss of jobs increased the number of teens in school. But for older teens, there was a significant problem: they had already graduated or completed their education, and this meant trying to find jobs, whatever was available. This highlights the adverse effect of the Great Depression on this particular demographic of young people. 
-
-The depression also exposed an education gap between sexes. Prior to the 1930s, many boys left school at an early age to work in unskilled industrial jobs, whilst girls had the option to remain in school in order to find a clerical position with required a high school diploma. The opportunity cost for boys to remain in school dropped dramatically during the Depression when it hit the traditionally male dominated industries, such as manufacturing. As such, young men started coming back in droves to classrooms, quickly narrowing the educational gap between men and women, and forever changing the education landscape for all. 
+The depression also exposed an education gap between sexes. Prior to the 1930s, many young men left school early to work in unskilled industrial jobs, whilst girls remained enrolled to qualify for clerical positions. The opportunity cost for boys to remain in school dropped dramatically during the Depression when it hit the traditionally male dominated industries, such as manufacturing. As such, young men started coming back in droves to classrooms, quickly narrowing the historical educational gap between men and women, and forever changing the education landscape for all. 
