@@ -1,7 +1,7 @@
 ---
 title: "Crises and Educational Attainment"
 subtitle: "How education trends changed during the Great Depression"
-author: "Based on Janas (2025), *Journal of Economic History*"
+author: "Jackson Centenara, Weikun Li, Samuel Remeljej"
 date: "`r Sys.Date()`"
 output:
   html_document:
