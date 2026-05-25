@@ -222,7 +222,7 @@ ggplot(chart1_data, aes(x = xaxis, y = finish_share,
     subtitle = "Share completing high school (≥12 years), by county unemployment severity",
     x        = "Year cohort turns 17",
     y        = NULL,
-    caption  = "Source: Janas (2025), Journal of Economic History. IPUMS linked census data.\nNote: x-axis shows the year each birth cohort reached age 17."
+    caption  = "Source: Janas (2026), Journal of Economic History. IPUMS linked census data.\nNote: x-axis shows the year each birth cohort reached age 17."
   ) +
   theme_custom() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -304,7 +304,7 @@ ggplot(chart2_data,
     subtitle = "Distribution of years of schooling completed, by county unemployment\nseverity and cohort group. Dashed line marks high school completion.",
     x        = "Years of education completed",
     y        = NULL,
-    caption  = "Source: Janas (2025), Journal of Economic History. Weighted by inverse probability weights."
+    caption  = "Source: Janas (2026), Journal of Economic History. Weighted by inverse probability weights."
   ) +
   theme_custom() +
   theme(
@@ -410,7 +410,7 @@ ggplot(chart3_data, aes(x = age, y = estimate,
     subtitle = "Effect on high school completion of a 1 standard deviation rise in local unemployment, \nby age in 1930 (reference: age 18).",
     x = "Age in 1930",
     y = NULL,
-    caption = "Source: Janas (2025), Journal of Economic History.\nEstimates from OLS with city and cohort fixed effects.\nNotes: Effect is relative to age-18 reference group. Shaded band highlights typical high-school enrolment ages."
+    caption = "Source: Janas (2026), Journal of Economic History.\nEstimates from OLS with city and cohort fixed effects.\nNotes: Effect is relative to age-18 reference group. Shaded band highlights typical high-school enrolment ages."
   ) +
   theme_custom()
 
